@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Serverless project with a DynamoDB table named product-inventory
+
+Resources:
+  ProductInventoryTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 'product-inventory'
+      AttributeDefinitions:
+        - AttributeName: 'productId'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'productId'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5

@@ -1,0 +1,104 @@
+# /*
+# This serverless.yml file sets up a Serverless service named pythoncrudapiproject using the AWS provider with Python 3.10 as the Lambda runtime. 
+# The service includes a Lambda authorizer function named myCustomAuthorizer 
+# and a main Lambda function named productHandler for handling CRUD operations on a DynamoDB table. 
+# The functions are triggered by HTTP events from API Gateway, with the Lambda authorizer protecting the main Lambda function endpoints. 
+# The Lambda functions have IAM permissions to interact with the specified DynamoDB table.
+# */
+
+service: pythoncrudapiproject # Name of the service
+frameworkVersion: '3' # Serverless framework version
+
+custom: # Custom variables section
+  project: pythoncrudapi # Project name
+  tableName: product-inventory # DynamoDB table name
+  pythonRequirements: # Python requirements configuration
+    dockerizePip: non-linux # Use Docker to package non-Linux dependencies
+
+plugins:
+  - serverless-python-requirements # Plugin to package Python requirements
+
+provider: # Provider configuration
+  name: aws # Cloud provider (AWS)
+  runtime: python3.10 # Lambda runtime (Python 3.10)
+  environment: # Dedicated environment variables section
+    JWT_SECRET: "test123" #${ssm:/myCustomAuthorizer/jwtSecret} # Reference the JWT secret from AWS Systems Manager Parameter Store
+  iam:
+    role:
+      statements: # IAM role permissions for Lambda
+        - Effect: Allow
+          Action: # Allowed DynamoDB actions
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Scan
+            - dynamodb:Query
+          Resource:
+            Fn::Sub: 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:custom.tableName}' # Resource ARN for the DynamoDB table
+
+  tags: # Tags for the Lambda functions
+    Project: Serverless
+    Name: LambdaCrud
+
+functions:
+  myCustomAuthorizer: # Lambda authorizer function
+    handler: src/authorizer.handler # Authorizer function handler
+
+  productHandler: # Main Lambda function handling CRUD operations
+    handler: src/lambda_function.handler # Lambda function handler
+    events: # API Gateway events triggering the Lambda function
+      - http:
+          path: /health
+          method: get
+          integration: lambda-proxy
+          cors: true
+          authorizer: 
+            name: myCustomAuthorizer
+            identitySource: method.request.header.authorizationToken
+            resultTtlInSeconds: 500
+      - http:
+          path: /product
+          method: get
+          integration: lambda-proxy
+          cors: true
+          authorizer:
+            name: myCustomAuthorizer
+            identitySource: method.request.header.authorizationToken
+            resultTtlInSeconds: 500
+      - http:
+          path: /product
+          method: post
+          integration: lambda-proxy
+          cors: true
+          authorizer:
+            name: myCustomAuthorizer
+            identitySource: method.request.header.authorizationToken
+            resultTtlInSeconds: 500
+      - http:
+          path: /product
+          method: patch
+          integration: lambda-proxy
+          cors: true
+          authorizer:
+            name: myCustomAuthorizer
+            identitySource: method.request.header.authorizationToken
+            resultTtlInSeconds: 500
+      - http:
+          path: /product
+          method: delete
+          integration: lambda-proxy
+          cors: true
+          authorizer: myCustomAuthorizer
+      - http:
+          path: /products
+          method: get
+          integration: lambda-proxy
+          cors: true
+          authorizer:
+            name: myCustomAuthorizer
+            identitySource: method.request.header.authorizationToken
+            resultTtlInSeconds: 500
+
+resources: # AWS CloudFormation resources
+  - ${file(./cf/dynamodb/dynamodb.yaml)} # Include the DynamoDB table configuration from an external file
