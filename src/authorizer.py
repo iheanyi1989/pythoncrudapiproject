@@ -33,7 +33,7 @@ def generate_policy(principal_Id, auth):
                     {
                         'Action': 'execute-api:Invoke',
                         'Effect': auth,  # Set the effect to the value of the 'auth' variable ('Allow' or 'Deny')
-                        'Resource': 'arn:aws:execute-api:us-east-1:384206995652:*' # Set the resource to the method ARN extracted from the event object
+                        'Resource': 'arn:aws:execute-api:us-east-1:{{Your_Account_Id}}:*' # Set the resource to the method ARN extracted from the event object
                     }
                 ]
             }
