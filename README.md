@@ -52,4 +52,6 @@ Running the above will automatically add `serverless-python-requirements` to `pl
 
 ### Testing Lambda Authorizer.
 https://docs.aws.amazon.com/apigateway/latest/developerguide/call-api-with-api-gateway-lambda-authorization.html
+
+
 Ensure to obtain test tokens from jwt.io secured with a secret string. Pass the secret string as a variable to the authorizer lambda function.
